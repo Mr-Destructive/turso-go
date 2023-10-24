@@ -32,7 +32,9 @@ func (t *Tokens) List() (*tokenList, error) {
 		return nil, err
 	}
 	var tokens tokenList
-	json.NewDecoder(resp.Body).Decode(&tokens)
+    if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
+        return nil, err
+    }
 	defer resp.Body.Close()
 	return &tokens, nil
 }
@@ -47,7 +49,9 @@ func (t *Tokens) Mint(name string) (*token, error) {
 		return nil, err
 	}
 	var token token
-	json.NewDecoder(resp.Body).Decode(&token)
+	if err := json.NewDecoder(resp.Body).Decode(&token); err != nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 	return &token, nil
 }
@@ -72,7 +76,9 @@ func (t *Tokens) Validate() (*tokenValidate, error) {
 		return nil, err
 	}
 	var tokenValidate tokenValidate
-	json.NewDecoder(resp.Body).Decode(&tokenValidate)
+	if err := json.NewDecoder(resp.Body).Decode(&tokenValidate); err != nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 	return &tokenValidate, nil
 }

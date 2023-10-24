@@ -37,7 +37,7 @@ func main() {
 
 ### Authentication
 
-The client must be created with a valid API token. Get an API token from the Turso dashboard.
+The client must be created with a valid API token. Get an API token from the [Turso CLI](https://docs.turso.tech/reference/turso-cli).
 
 - The token will be automatically included in all requests to the API.
 
