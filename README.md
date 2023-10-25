@@ -43,6 +43,33 @@ The client must be created with a valid API token. Get an API token from the [Tu
 
 ### Organizations
 
+- Get all the organisations for the authenticated user:
+
+```go
+client := turso.NewClient("", "YOUR_API_TOKEN")
+
+orgs, err := client.Organizations.List()
+
+if err != nil {
+    panic(err)
+}
+fmt.Println(orgs)
+```
+
+- Get members with their roles in a given organisation:
+
+```go
+client := turso.NewClient("", "YOUR_API_TOKEN")
+
+// provide the org slug
+members, err := client.Organizations.Members("org_slug")
+
+if err != nil {
+    panic(err)
+}
+fmt.Println(orgs)
+```
+
 ### Instances
 
 
