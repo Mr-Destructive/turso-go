@@ -118,3 +118,96 @@ func (org *Organizations) Members(organizationSlug string) (*organizationMembers
 	defer resp.Body.Close()
 	return &members, nil
 }
+
+func (org *Organizations) Databases(organizationSlug string) (*organizationDatabaseList, error) {
+	if organizationSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases", tursoBaseURL, organizationSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var database = organizationDatabaseList{}
+	err = json.NewDecoder(resp.Body).Decode(&database)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return &database, nil
+}
+
+func (org *Organizations) Database(orgSlug, dbName string) (*organizationDatabase, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	if dbName == "" {
+		return nil, fmt.Errorf("database name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s", tursoBaseURL, orgSlug, dbName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var database = organizationDatabase{}
+	json.NewDecoder(resp.Body).Decode(&database)
+	defer resp.Body.Close()
+	return &database, nil
+}
+
+func (org *Organizations) DBUsage(orgName, dbName string) (*orgDBMonthUsage, error) {
+	if orgName == "" {
+		return nil, fmt.Errorf("organization name is required")
+	}
+	if dbName == "" {
+		return nil, fmt.Errorf("database name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s/usage", tursoBaseURL, orgName, dbName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var usage = orgDBMonthUsage{}
+	json.NewDecoder(resp.Body).Decode(&usage)
+	defer resp.Body.Close()
+	return &usage, nil
+}
+
+func (org *Organizations) Instances(orgName, dbName string) (*databaseInstances, error) {
+	if orgName == "" {
+		return nil, fmt.Errorf("organization name is required")
+	}
+	if dbName == "" {
+		return nil, fmt.Errorf("database name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s/instances", tursoBaseURL, orgName, dbName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var instances = databaseInstances{}
+	json.NewDecoder(resp.Body).Decode(&instances)
+	defer resp.Body.Close()
+	return &instances, nil
+}
+
+func (org *Organizations) Instance(orgName, dbName, instanceName string) (*databaseInstance, error) {
+	if orgName == "" {
+		return nil, fmt.Errorf("organization name is required")
+	}
+	if dbName == "" {
+		return nil, fmt.Errorf("database name is required")
+	}
+	if instanceName == "" {
+		return nil, fmt.Errorf("instance name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s/instances/%s", tursoBaseURL, orgName, dbName, instanceName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var instance = databaseInstance{}
+	json.NewDecoder(resp.Body).Decode(&instance)
+	defer resp.Body.Close()
+	return &instance, nil
+}

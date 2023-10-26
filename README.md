@@ -3,7 +3,7 @@
 This is a Golang client for interacting with the Turso API. It provides methods for:
 
 - [x] Managing API tokens
-- [ ] Tracking Database Usage
+- [x] Tracking Database Usage
 - [ ] Managing Logical DBs and Instances
 
 ## Installation
@@ -70,8 +70,33 @@ if err != nil {
 fmt.Println(orgs)
 ```
 
-### Instances
+#### Databases
 
+- Get all the logical DBs for the organisation:
+
+```go
+// provide the org slug
+logicalDBs, err := client.Organizations.Databases("org_slug")
+fmt.Println(logicalDBs)
+```
+
+- Get the monthly usage for the database in the organisation:
+
+```go
+// provide the org slug and db name
+usage, err := client.Organizations.DBUsage("org_slug", "my_db")
+fmt.Println(usage)
+```
+
+#### Instances
+
+- Get all the instances for the organisation:
+
+```go
+// provide the org slug and db name
+instances, err := client.Organizations.Instances("org_slug", "my_db")
+fmt.Println(instances)
+```
 
 ## References
 

@@ -1,3 +1,3 @@
-module github.com/mr-destructive/turso_go
+module github.com/mr-destructive/turso-go
 
 go 1.20
