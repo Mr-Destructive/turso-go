@@ -87,6 +87,10 @@ type databaseInstance struct {
 	} `json:"instance"`
 }
 
+type jwtToken struct {
+	JWT string `json:"jwt"`
+}
+
 func (org *Organizations) List() (*organizationList, error) {
 	endpoint := fmt.Sprintf("%s/v1/organizations", tursoBaseURL)
 	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
@@ -118,6 +122,43 @@ func (org *Organizations) Members(organizationSlug string) (*organizationMembers
 	}
 	defer resp.Body.Close()
 	return &members, nil
+}
+
+func (org *Organizations) MintToken(organizationSlug, dbName, expiration, authorization string) (*jwtToken, error) {
+	if organizationSlug == "" {
+		return nil, fmt.Errorf("organisation slug is required")
+	}
+	if dbName == "" {
+		return nil, fmt.Errorf("database name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s/auth/tokens", tursoBaseURL, organizationSlug, dbName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPost, nil)
+	if err != nil {
+		return nil, err
+	}
+	var jwtToken = jwtToken{}
+	err = json.NewDecoder(resp.Body).Decode(&jwtToken)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return &jwtToken, nil
+}
+
+func (org *Organizations) InvalidateTokens(organizationSlug, dbName string) error {
+	if organizationSlug == "" {
+		return fmt.Errorf("organization slug is required")
+	}
+	if dbName == "" {
+		return fmt.Errorf("database name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s/auth/tokens", tursoBaseURL, organizationSlug, dbName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodDelete, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
 }
 
 func (org *Organizations) Databases(organizationSlug string) (*organizationDatabaseList, error) {
