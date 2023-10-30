@@ -11,13 +11,13 @@ type Organizations struct {
 	client *client
 }
 
-type organization struct {
+type Organization struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
 	Type string `json:"type"`
 }
 
-type organizationMembers struct {
+type OrganizationMembers struct {
 	Role     string `json:"role"`
 	Username string `json:"username"`
 }
@@ -32,23 +32,25 @@ type Database struct {
 	PrimaryRegion   string   `json:"primaryRegion"`
 }
 
-type orgDBMonthUsage struct {
-	Database struct {
-		UUID      string `json:"uuid"`
-		Instances struct {
-			UUID  string `json:"uuid"`
-			Usage struct {
-				RowsRead     int `json:"rows_read"`
-				RowsWritten  int `json:"rows_written"`
-				StorageBytes int `json:"storage_bytes"`
-			} `json:"usage"`
-		} `json:"instances"`
-		Usage struct {
-			RowsRead     int `json:"rows_read"`
-			RowsWritten  int `json:"rows_written"`
-			StorageBytes int `json:"storage_bytes"`
-		} `json:"usage"`
-	} `json:"database"`
+type usage struct {
+	RowsRead     int `json:"rows_read"`
+	RowsWritten  int `json:"rows_written"`
+	StorageBytes int `json:"storage_bytes"`
+}
+
+type instanceUsage struct {
+	UUID  string `json:"uuid"`
+	Usage usage  `json:"usage"`
+}
+
+type dbUsage struct {
+	UUID      string        `json:"uuid"`
+	Instances instanceUsage `json:"instances"`
+	Usage     usage         `json:"usage"`
+}
+
+type DBMonthlyUsage struct {
+	Database dbUsage `json:"database"`
 }
 
 type Instance struct {
@@ -60,11 +62,11 @@ type Instance struct {
 }
 
 type organizationList struct {
-	Organizations []organization `json:"organizations"`
+	Organizations []Organization `json:"organizations"`
 }
 
 type organizationMembersList struct {
-	Members []organizationMembers `json:"members"`
+	Members []OrganizationMembers `json:"members"`
 }
 
 type organizationDatabaseList struct {
@@ -246,7 +248,7 @@ func (org *Organizations) UpdateAllInstances(orgName, dbName string) error {
 	return nil
 }
 
-func (org *Organizations) DBUsage(orgName, dbName string) (*orgDBMonthUsage, error) {
+func (org *Organizations) DBUsage(orgName, dbName string) (*DBMonthlyUsage, error) {
 	if orgName == "" {
 		return nil, fmt.Errorf("organization name is required")
 	}
@@ -258,7 +260,7 @@ func (org *Organizations) DBUsage(orgName, dbName string) (*orgDBMonthUsage, err
 	if err != nil {
 		return nil, err
 	}
-	var usage = orgDBMonthUsage{}
+	var usage = DBMonthlyUsage{}
 	json.NewDecoder(resp.Body).Decode(&usage)
 	defer resp.Body.Close()
 	return &usage, nil
