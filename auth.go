@@ -11,35 +11,35 @@ type Tokens struct {
 	client *client
 }
 
-type token struct {
+type Token struct {
 	Name  string `json:"name"`
 	Id    string `json:"id"`
 	Token string `json:"token,omitempty"`
 }
 
-type tokenList struct {
-	Tokens []token `json:"tokens"`
+type TokenList struct {
+	Tokens []Token `json:"tokens"`
 }
 
 type tokenValidate struct {
 	Expiration time.Duration `json:"exp"`
 }
 
-func (t *Tokens) List() (*tokenList, error) {
+func (t *Tokens) List() (*TokenList, error) {
 	endpoint := fmt.Sprintf("%s/v1/auth/api-tokens", tursoBaseURL)
 	resp, err := t.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
 	if err != nil {
 		return nil, err
 	}
-	var tokens tokenList
-    if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
-        return nil, err
-    }
+	var tokens TokenList
+	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 	return &tokens, nil
 }
 
-func (t *Tokens) Mint(name string) (*token, error) {
+func (t *Tokens) Mint(name string) (*Token, error) {
 	if name == "" {
 		return nil, fmt.Errorf("token name is required")
 	}
@@ -48,7 +48,7 @@ func (t *Tokens) Mint(name string) (*token, error) {
 	if err != nil {
 		return nil, err
 	}
-	var token token
+	var token Token
 	if err := json.NewDecoder(resp.Body).Decode(&token); err != nil {
 		return nil, err
 	}

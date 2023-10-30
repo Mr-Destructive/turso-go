@@ -22,6 +22,10 @@ type OrganizationMembers struct {
 	Username string `json:"username"`
 }
 
+type OrganisationList struct {
+	Orgs []Organization `json:"organizations"`
+}
+
 type Database struct {
 	Name            string   `json:"name"`
 	Hostname        string   `json:"hostname"`
@@ -61,10 +65,6 @@ type Instance struct {
 	Name     string `json:"name"`
 }
 
-type organizationList struct {
-	Organizations []Organization `json:"organizations"`
-}
-
 type organizationMembersList struct {
 	Members []OrganizationMembers `json:"members"`
 }
@@ -93,14 +93,14 @@ type jwtToken struct {
 	JWT string `json:"jwt"`
 }
 
-func (org *Organizations) List() (*organizationList, error) {
+func (org *Organizations) List() (*OrganisationList, error) {
 	endpoint := fmt.Sprintf("%s/v1/organizations", tursoBaseURL)
 	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
 	if err != nil {
 		return nil, err
 	}
-	var organizations = organizationList{}
-	err = json.NewDecoder(resp.Body).Decode(&organizations)
+	var organizations = OrganisationList{}
+	err = json.NewDecoder(resp.Body).Decode(&organizations.Orgs)
 	if err != nil {
 		return nil, err
 	}
