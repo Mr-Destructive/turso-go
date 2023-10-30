@@ -22,7 +22,7 @@ type organizationMembers struct {
 	Username string `json:"username"`
 }
 
-type database struct {
+type Database struct {
 	Name            string   `json:"name"`
 	Hostname        string   `json:"hostname"`
 	IssuedCertLimit int      `json:"issuedCertLimit"`
@@ -51,7 +51,7 @@ type orgDBMonthUsage struct {
 	} `json:"database"`
 }
 
-type instance struct {
+type Instance struct {
 	UUID     string `json:"uuid"`
 	Hostname string `json:"hostname"`
 	Region   string `json:"region"`
@@ -68,22 +68,22 @@ type organizationMembersList struct {
 }
 
 type organizationDatabaseList struct {
-	Databases []database `json:"databases"`
+	Databases []Database `json:"databases"`
 }
 
 type organizationDatabase struct {
 	Database struct {
-		database
+		Database
 	} `json:"database"`
 }
 
 type databaseInstances struct {
-	Instances []instance `json:"instances"`
+	Instances []Instance `json:"instances"`
 }
 
 type databaseInstance struct {
 	Instance struct {
-		instance
+		Instance
 	} `json:"instance"`
 }
 
@@ -197,7 +197,7 @@ func (org *Organizations) Database(orgSlug, dbName string) (*organizationDatabas
 	return &database, nil
 }
 
-func (org *Organizations) CreateDatabase(orgName string, body map[string]string) (*database, error) {
+func (org *Organizations) CreateDatabase(orgName string, body map[string]string) (*Database, error) {
 	if orgName == "" {
 		return nil, fmt.Errorf("organization name is required")
 	}
@@ -208,7 +208,7 @@ func (org *Organizations) CreateDatabase(orgName string, body map[string]string)
 	if err != nil {
 		return nil, err
 	}
-	var database = database{}
+	var database = Database{}
 	json.NewDecoder(resp.Body).Decode(&database)
 	defer resp.Body.Close()
 	return &database, nil
