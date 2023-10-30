@@ -8,37 +8,44 @@ import (
 	"net/url"
 )
 
-type client struct {
-	baseURL  string
-	apiToken string
-	api      *http.Client
+type Client struct {
+    client client
 	Tokens
 	Organizations
 	Locations
 }
 
+type client struct {
+	baseURL  string
+	apiToken string
+	api      *http.Client
+}
+
 const tursoBaseURL = "https://api.turso.tech"
 
-func NewClient(baseURL, apiToken string) (*client, error) {
+func NewClient(baseURL, apiToken string) (*Client, error) {
 	if baseURL == "" {
 		baseURL = tursoBaseURL
 	}
 	if apiToken == "" {
 		return nil, fmt.Errorf("apiToken is required")
 	}
-	client := &client{
+	connection := &client{
 		baseURL:  baseURL,
 		apiToken: apiToken,
 		api:      &http.Client{},
 	}
+    client := &Client{
+        client: *connection,
+    }
 	client.Tokens = Tokens{
-		client: client,
+		client: connection,
 	}
 	client.Organizations = Organizations{
-		client: client,
+		client: connection,
 	}
 	client.Locations = Locations{
-		client: client,
+		client: connection,
 	}
 	return client, nil
 }
