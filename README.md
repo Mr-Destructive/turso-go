@@ -4,7 +4,7 @@ This is a Golang client for interacting with the Turso API. It provides methods 
 
 - [x] Managing API tokens
 - [x] Tracking Database Usage
-- [ ] Managing Logical DBs and Instances
+- [x] Managing Logical DBs and Instances
 
 ## Installation
 

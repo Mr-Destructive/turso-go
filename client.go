@@ -9,7 +9,7 @@ import (
 )
 
 type Client struct {
-    client client
+	client client
 	Tokens
 	Organizations
 	Locations
@@ -35,9 +35,9 @@ func NewClient(baseURL, apiToken string) (*Client, error) {
 		apiToken: apiToken,
 		api:      &http.Client{},
 	}
-    client := &Client{
-        client: *connection,
-    }
+	client := &Client{
+		client: *connection,
+	}
 	client.Tokens = Tokens{
 		client: connection,
 	}
