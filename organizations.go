@@ -26,6 +26,14 @@ type OrganisationList struct {
 	Orgs []Organization `json:"organizations"`
 }
 
+type OrganizationGroup struct {
+	Name      string   `json:"name"`
+	Primary   string   `json:"primary"`
+	UUID      string   `json:"uuid"`
+	Archived  bool     `json:"archived"`
+	Locations []string `json:"locations"`
+}
+
 type Database struct {
 	Name            string   `json:"name"`
 	Hostname        string   `json:"hostname"`
@@ -67,6 +75,14 @@ type Instance struct {
 
 type organizationMembersList struct {
 	Members []OrganizationMembers `json:"members"`
+}
+
+type organizationGroup struct {
+	Group OrganizationGroup `json:"group"`
+}
+
+type organizationGroupList struct {
+	Groups []OrganizationGroup `json:"groups"`
 }
 
 type organizationDatabaseList struct {
@@ -342,4 +358,112 @@ func (org *Organizations) DeleteInstance(orgSlug, dbName, instanceName string) e
 	}
 	defer resp.Body.Close()
 	return nil
+}
+
+func (org *Organizations) ListGroups(orgSlug string) (*organizationGroupList, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/groups", tursoBaseURL, orgSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var groups = organizationGroupList{}
+	json.NewDecoder(resp.Body).Decode(&groups)
+	defer resp.Body.Close()
+	return &groups, nil
+}
+
+func (org *Organizations) Group(orgSlug, groupName string) (*organizationGroup, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	if groupName == "" {
+		return nil, fmt.Errorf("group name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/groups/%s", tursoBaseURL, orgSlug, groupName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var group = organizationGroup{}
+	json.NewDecoder(resp.Body).Decode(&group)
+	defer resp.Body.Close()
+	return &group, nil
+}
+
+func (org *Organizations) CreateGroup(orgSlug string, body map[string]string) (*organizationGroup, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	b := new(bytes.Buffer)
+	json.NewEncoder(b).Encode(body)
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/groups", tursoBaseURL, orgSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPost, b)
+	if err != nil {
+		return nil, err
+	}
+	var group = organizationGroup{}
+	json.NewDecoder(resp.Body).Decode(&group)
+	defer resp.Body.Close()
+	return &group, nil
+}
+
+func (org *Organizations) DeleteGroup(orgSlug, groupName string) error {
+	if orgSlug == "" {
+		return fmt.Errorf("organization slug is required")
+	}
+	if groupName == "" {
+		return fmt.Errorf("group name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/groups/%s", tursoBaseURL, orgSlug, groupName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodDelete, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
+func (org *Organizations) AddLocationToGroup(orgSlug, groupName, location string) (*organizationGroup, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	if groupName == "" {
+		return nil, fmt.Errorf("group name is required")
+	}
+	if location == "" {
+		return nil, fmt.Errorf("location is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/groups/%s/locations/%s", tursoBaseURL, orgSlug, groupName, location)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPost, nil)
+	if err != nil {
+		return nil, err
+	}
+	var group = organizationGroup{}
+	json.NewDecoder(resp.Body).Decode(&group)
+	defer resp.Body.Close()
+	return &group, nil
+}
+
+func (org *Organizations) RemoveLocationFromGroup(orgSlug, groupName, location string) (*organizationGroup, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	if groupName == "" {
+		return nil, fmt.Errorf("group name is required")
+	}
+	if location == "" {
+		return nil, fmt.Errorf("location is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/groups/%s/locations/%s", tursoBaseURL, orgSlug, groupName, location)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodDelete, nil)
+	if err != nil {
+		return nil, err
+	}
+	var group = organizationGroup{}
+	json.NewDecoder(resp.Body).Decode(&group)
+	defer resp.Body.Close()
+	return &group, nil
 }
