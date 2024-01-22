@@ -22,6 +22,7 @@ type client struct {
 }
 
 const tursoBaseURL = "https://api.turso.tech"
+const tursoBaseURLRegion = "https://region.turso.io"
 
 func NewClient(baseURL, apiToken string) (*Client, error) {
 	if baseURL == "" {
