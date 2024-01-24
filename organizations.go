@@ -12,9 +12,12 @@ type Organizations struct {
 }
 
 type Organization struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
-	Type string `json:"type"`
+	Name          string `json:"name"`
+	Slug          string `json:"slug"`
+	Type          string `json:"type"`
+	BlockedReads  bool   `json:"blocked_reads"`
+	BlockedWrites bool   `json:"blocked_writes"`
+	Overages      bool   `json:"overages"`
 }
 
 type OrganizationMembers struct {
@@ -32,6 +35,19 @@ type OrganizationGroup struct {
 	UUID      string   `json:"uuid"`
 	Archived  bool     `json:"archived"`
 	Locations []string `json:"locations"`
+}
+
+type organizationInvite struct {
+	Accepted       bool         `json:"Accepted"`
+	CreatedAt      string       `json:"CreatedAt"`
+	DeletedAt      string       `json:"DeletedAt"`
+	UpdatedAt      string       `json:"UpdatedAt"`
+	Email          string       `json:"Email"`
+	ID             int          `json:"Id"`
+	Organization   Organization `json:"Organization"`
+	OrganizationID int          `json:"OrganizationID"`
+	Role           string       `json:"Role"`
+	Token          string       `json:"Token"`
 }
 
 type Database struct {
@@ -140,6 +156,34 @@ func (org *Organizations) Members(organizationSlug string) (*organizationMembers
 	}
 	defer resp.Body.Close()
 	return &members, nil
+}
+
+func (org *Organizations) AddMembers(organizationSlug string, body map[string]string) error {
+	if organizationSlug == "" {
+		return fmt.Errorf("organization slug is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/members", tursoBaseURL, organizationSlug)
+	b := new(bytes.Buffer)
+	json.NewEncoder(b).Encode(body)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPost, b)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
+func (org *Organizations) RemoveMembers(organizationSlug string, username string) error {
+	if organizationSlug == "" {
+		return fmt.Errorf("organization slug is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/members/%s", tursoBaseURL, organizationSlug, username)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodDelete, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
 }
 
 func (org *Organizations) MintToken(organizationSlug, dbName, expiration, authorization string) (*jwtToken, error) {
