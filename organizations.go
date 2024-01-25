@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -138,6 +139,21 @@ func (org *Organizations) List() (*OrganisationList, error) {
 	}
 	defer resp.Body.Close()
 	return &organizations, nil
+}
+
+func (org *Organizations) Update(organizationSlug string, body map[string]string) error {
+	if organizationSlug == "" {
+		return fmt.Errorf("organization slug is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s", tursoBaseURL, organizationSlug)
+	b := new(bytes.Buffer)
+	json.NewEncoder(b).Encode(body)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPut, b)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
 }
 
 func (org *Organizations) Members(organizationSlug string) (*organizationMembersList, error) {
@@ -510,4 +526,52 @@ func (org *Organizations) RemoveLocationFromGroup(orgSlug, groupName, location s
 	json.NewDecoder(resp.Body).Decode(&group)
 	defer resp.Body.Close()
 	return &group, nil
+}
+
+func (org *Organizations) UploadDumpFile(orgSlug string, file io.Reader) error {
+	if orgSlug == "" {
+		return fmt.Errorf("organization slug is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/dumps", tursoBaseURL, orgSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPost, file)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
+func (org *Organizations) InvalidateAllDBTokens(orgSlug, dbName string) error {
+	if orgSlug == "" {
+		return fmt.Errorf("organization slug is required")
+	}
+	if dbName == "" {
+		return fmt.Errorf("database name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s/auth/rotate", tursoBaseURL, orgSlug, dbName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPost, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
+func (org *Organizations) InvalidateAllGroupTokens(orgSlug, groupName, token string) error {
+	if orgSlug == "" {
+		return fmt.Errorf("organization slug is required")
+	}
+	if groupName == "" {
+		return fmt.Errorf("group name is required")
+	}
+	if token == "" {
+		return fmt.Errorf("token is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/groups/%s/auth/rotate", tursoBaseURL, orgSlug, groupName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPost, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
 }
