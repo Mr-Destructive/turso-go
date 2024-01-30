@@ -38,7 +38,7 @@ type OrganizationGroup struct {
 	Locations []string `json:"locations"`
 }
 
-type organizationInvite struct {
+type OrganizationInvite struct {
 	Accepted       bool         `json:"Accepted"`
 	CreatedAt      string       `json:"CreatedAt"`
 	DeletedAt      string       `json:"DeletedAt"`
@@ -49,6 +49,10 @@ type organizationInvite struct {
 	OrganizationID int          `json:"OrganizationID"`
 	Role           string       `json:"Role"`
 	Token          string       `json:"Token"`
+}
+
+type OrganizationInvites struct {
+	Invites []OrganizationInvite `json:"invites"`
 }
 
 type Database struct {
@@ -574,4 +578,36 @@ func (org *Organizations) InvalidateAllGroupTokens(orgSlug, groupName, token str
 	}
 	defer resp.Body.Close()
 	return nil
+}
+
+func (org *Organizations) ListInvites(orgSlug string) (*OrganizationInvites, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/invites", tursoBaseURL, orgSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var invites = OrganizationInvites{}
+	json.NewDecoder(resp.Body).Decode(&invites)
+	defer resp.Body.Close()
+	return &invites, nil
+}
+
+func (org *Organizations) CreateInvite(orgSlug string, body map[string]string) (*OrganizationInvite, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	b := new(bytes.Buffer)
+	json.NewEncoder(b).Encode(body)
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/invites", tursoBaseURL, orgSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPost, b)
+	if err != nil {
+		return nil, err
+	}
+	var invite = OrganizationInvite{}
+	json.NewDecoder(resp.Body).Decode(&invite)
+	defer resp.Body.Close()
+	return &invite, nil
 }
