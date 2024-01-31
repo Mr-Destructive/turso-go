@@ -611,3 +611,24 @@ func (org *Organizations) CreateInvite(orgSlug string, body map[string]string) (
 	defer resp.Body.Close()
 	return &invite, nil
 }
+
+func (org *Organizations) TransferOrganisation(orgSlug, groupName, ToOrgSlug string) (*organizationGroup, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	if groupName == "" {
+		return nil, fmt.Errorf("group name is required")
+	}
+	if ToOrgSlug == "" {
+		return nil, fmt.Errorf("the organization slug to be transfer to is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/groups/%s/transfer", tursoBaseURL, orgSlug, groupName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPost, nil)
+	if err != nil {
+		return nil, err
+	}
+	var transfer = organizationGroup{}
+	json.NewDecoder(resp.Body).Decode(&transfer)
+	defer resp.Body.Close()
+	return &transfer, nil
+}
