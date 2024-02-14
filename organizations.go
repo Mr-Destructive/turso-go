@@ -65,6 +65,16 @@ type Database struct {
 	PrimaryRegion   string   `json:"primaryRegion"`
 }
 
+type topQueries struct {
+	Query       string `json:"query"`
+	RowsRead    int    `json:"rows_read"`
+	RowsWritten int    `json:"rows_written"`
+}
+
+type DatabaseStats struct {
+	TopQueries []topQueries `json:"top_queries"`
+}
+
 type usage struct {
 	RowsRead     int `json:"rows_read"`
 	RowsWritten  int `json:"rows_written"`
@@ -631,4 +641,22 @@ func (org *Organizations) TransferOrganisation(orgSlug, groupName, ToOrgSlug str
 	json.NewDecoder(resp.Body).Decode(&transfer)
 	defer resp.Body.Close()
 	return &transfer, nil
+}
+
+func (org *Organizations) DatabaseStats(orgSlug, dbName string) (*DatabaseStats, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	if dbName == "" {
+		return nil, fmt.Errorf("database name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s/stats", tursoBaseURL, orgSlug, dbName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var stats = DatabaseStats{}
+	json.NewDecoder(resp.Body).Decode(&stats)
+	defer resp.Body.Close()
+	return &stats, nil
 }

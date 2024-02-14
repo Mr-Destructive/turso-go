@@ -154,3 +154,39 @@ func TestOrganizationDBUsage(t *testing.T) {
 	}
 }
 
+func TestOrganizationInvitesList(t *testing.T) {
+	client, err := newClient()
+	if err != nil || client == nil {
+		t.Error(err)
+	}
+	invites, err := client.Organizations.ListInvites(org_name)
+	if err != nil {
+		t.Error(err)
+	}
+	if invites == nil && len(invites.Invites) == 0 {
+		t.Error("invites should not be nil")
+	}
+	invites, err = client.Organizations.ListInvites("")
+	if err.Error() != "organization slug is required" {
+		t.Error(err)
+	}
+}
+
+func TestOrganizationGroups(t *testing.T) {
+	client, err := newClient()
+	if err != nil || client == nil {
+		t.Error(err)
+	}
+	groups, err := client.Organizations.ListGroups(org_name)
+	if err != nil {
+		t.Error(err)
+	}
+	if groups == nil && len(groups.Groups) == 0 {
+		t.Error("groups should not be nil")
+	}
+	groups, err = client.Organizations.ListGroups("")
+	if err.Error() != "organization slug is required" {
+		t.Error(err)
+	}
+}
+

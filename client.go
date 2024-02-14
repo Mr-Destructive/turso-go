@@ -13,6 +13,7 @@ type Client struct {
 	Tokens
 	Organizations
 	Locations
+	AuditLogs
 }
 
 type client struct {
@@ -46,6 +47,9 @@ func NewClient(baseURL, apiToken string) (*Client, error) {
 		client: connection,
 	}
 	client.Locations = Locations{
+		client: connection,
+	}
+	client.AuditLogs = AuditLogs{
 		client: connection,
 	}
 	return client, nil

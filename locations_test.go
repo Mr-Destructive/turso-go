@@ -17,3 +17,17 @@ func TestLocations(t *testing.T) {
 		t.Error("locations should not be nil")
 	}
 }
+
+func TestClosestLocation(t *testing.T) {
+	client, err := newClient()
+	if err != nil || client == nil {
+		t.Error(err)
+	}
+	locations, err := client.Locations.Closest()
+	if err != nil {
+		t.Error(err)
+	}
+	if locations == nil && len(locations.Locations) == 0 {
+		t.Error("locations should not be nil")
+	}
+}
