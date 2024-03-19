@@ -126,6 +126,15 @@ type organizationDatabase struct {
 	} `json:"database"`
 }
 
+type organizationDatabaseConfig struct {
+	AllowAttach bool   `json:"allow_attach"`
+	SizeLimit   string `json:"size_limit"`
+}
+
+type DatabaseConfiguration struct {
+	organizationDatabaseConfig
+}
+
 type databaseInstances struct {
 	Instances []Instance `json:"instances"`
 }
@@ -301,6 +310,24 @@ func (org *Organizations) CreateDatabase(orgSlug string, body map[string]string)
 		return nil, err
 	}
 	var database = Database{}
+	json.NewDecoder(resp.Body).Decode(&database)
+	defer resp.Body.Close()
+	return &database, nil
+}
+
+func (org *Organizations) UpdateDatabaseConfiguration(orgSlug, dbName string, body map[string]string) (*DatabaseConfiguration, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	if dbName == "" {
+		return nil, fmt.Errorf("database name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s/configuration", tursoBaseURL, orgSlug, dbName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPatch, body)
+	if err != nil {
+		return nil, err
+	}
+	var database = DatabaseConfiguration{}
 	json.NewDecoder(resp.Body).Decode(&database)
 	defer resp.Body.Close()
 	return &database, nil
