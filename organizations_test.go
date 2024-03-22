@@ -190,3 +190,25 @@ func TestOrganizationGroups(t *testing.T) {
 	}
 }
 
+func TestOrganizationGroup(t *testing.T) {
+	client, err := newClient()
+	if err != nil || client == nil {
+		t.Error(err)
+	}
+	group_name := "default"
+	groups, err := client.Organizations.Group(org_name, group_name)
+	if err != nil {
+		t.Error(err)
+	}
+	if groups == nil && groups.Group.Name != group_name {
+		t.Error("groups should not be nil")
+	}
+	groups, err = client.Organizations.Group("", group_name)
+	if err.Error() != "organization slug is required" {
+		t.Error(err)
+	}
+	groups, err = client.Organizations.Group(org_name, "")
+	if err.Error() != "group name is required" {
+		t.Error(err)
+	}
+}

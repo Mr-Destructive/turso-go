@@ -349,6 +349,22 @@ func (org *Organizations) DeleteDatabase(orgSlug, dbName string) error {
 	return nil
 }
 
+func (org *Organizations) UpdateDatabasesInGroup(orgSlug, groupName string) error {
+	if orgSlug == "" {
+		return fmt.Errorf("organization slug is required")
+	}
+	if groupName == "" {
+		return fmt.Errorf("group name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/groups/%s/update", tursoBaseURL, orgSlug, groupName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodPut, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
 func (org *Organizations) UpdateAllInstances(orgSlug, dbName string) error {
 	if orgSlug == "" {
 		return fmt.Errorf("organization slug is required")
