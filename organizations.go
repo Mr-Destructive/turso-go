@@ -21,6 +21,29 @@ type Organization struct {
 	Overages      bool   `json:"overages"`
 }
 
+type Plan struct {
+	Name   string `json:"name"`
+	Price  int    `json:"price"`
+	Quotas Quota  `json:"quotas"`
+}
+
+type Quota struct {
+	RowsRead    int `json:"rowsRead"`
+	RowsWritten int `json:"rowsWritten"`
+	Databases   int `json:"databases"`
+	Locations   int `json:"locations"`
+	Storage     int `json:"storage"`
+	Groups      int `json:"groups"`
+	BytesSynced int `json:"bytesSynced"`
+}
+
+type Subscription struct {
+	Subscription string `json:"subscription"`
+	Overages     bool   `json:"overages"`
+	Plan         string `json:"plan"`
+	Timeline     string `json:"timeline"`
+}
+
 type OrganizationMembers struct {
 	Role     string `json:"role"`
 	Username string `json:"username"`
@@ -702,4 +725,28 @@ func (org *Organizations) DatabaseStats(orgSlug, dbName string) (*DatabaseStats,
 	json.NewDecoder(resp.Body).Decode(&stats)
 	defer resp.Body.Close()
 	return &stats, nil
+}
+
+func (org *Organizations) ListPlans(orgSlug string) (*Plan, error) {
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/plans", tursoBaseURL, orgSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var plans = Plan{}
+	json.NewDecoder(resp.Body).Decode(&plans)
+	defer resp.Body.Close()
+	return &plans, nil
+}
+
+func (org *Organizations) CurrentSubscription(orgSlug string) (*Subscription, error) {
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/subscriptions", tursoBaseURL, orgSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var subscription = Subscription{}
+	json.NewDecoder(resp.Body).Decode(&subscription)
+	defer resp.Body.Close()
+	return &subscription, nil
 }
