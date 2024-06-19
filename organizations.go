@@ -44,6 +44,19 @@ type Subscription struct {
 	Timeline     string `json:"timeline"`
 }
 
+type Invoice struct {
+	InvoiceNumber   string `json:"invoice_number"`
+	AmountDue       string `json:"amount_due"`
+	DueDate         string `json:"due_date"`
+	PaidAt          string `json:"paid_at"`
+	PaymentFailedAt string `json:"payment_failed_at"`
+	InvoicePdf      string `json:"invoice_pdf"`
+}
+
+type Invoices struct {
+	Invoices []Invoice `json:"invoices"`
+}
+
 type OrganizationMembers struct {
 	Role     string `json:"role"`
 	Username string `json:"username"`
@@ -112,11 +125,35 @@ type instanceUsage struct {
 type dbUsage struct {
 	UUID      string        `json:"uuid"`
 	Instances instanceUsage `json:"instances"`
-	Usage     usage         `json:"usage"`
+	Total     usage         `json:"total"`
 }
 
 type DBMonthlyUsage struct {
 	Database dbUsage `json:"database"`
+}
+
+type OrgDBUsage struct {
+	UUID      string        `json:"uuid"`
+	Instances instanceUsage `json:"instances"`
+	Total     usage         `json:"total"`
+}
+
+type OrgUsage struct {
+	UUID  string `json:"uuid"`
+	Usage struct {
+		RowsRead    int `json:"rows_read"`
+		RowsWritten int `json:"rows_written"`
+		Databases   int `json:"databases"`
+		Locations   int `json:"locations"`
+		Storage     int `json:"storage"`
+		Groups      int `json:"groups"`
+		BytesSynced int `json:"bytes_synced"`
+	} `json:"usage"`
+	Databases OrgDBUsage `json:"databases"`
+}
+
+type OrganizationUsage struct {
+	Organization OrgUsage `json:"organization"`
 }
 
 type Instance struct {
@@ -150,8 +187,10 @@ type organizationDatabase struct {
 }
 
 type organizationDatabaseConfig struct {
-	AllowAttach bool   `json:"allow_attach"`
-	SizeLimit   string `json:"size_limit"`
+	AllowAttach   bool   `json:"allow_attach"`
+	SizeLimit     string `json:"size_limit"`
+	BlockedReads  bool   `json:"blocked_reads"`
+	BlockedWrites bool   `json:"blocked_writes"`
 }
 
 type DatabaseConfiguration struct {
@@ -333,6 +372,24 @@ func (org *Organizations) CreateDatabase(orgSlug string, body map[string]string)
 		return nil, err
 	}
 	var database = Database{}
+	json.NewDecoder(resp.Body).Decode(&database)
+	defer resp.Body.Close()
+	return &database, nil
+}
+
+func (org *Organizations) RetrieveDatabaseConfiguration(orgSlug, dbName string) (*DatabaseConfiguration, error) {
+	if orgSlug == "" {
+		return nil, fmt.Errorf("organization slug is required")
+	}
+	if dbName == "" {
+		return nil, fmt.Errorf("database name is required")
+	}
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/databases/%s/configuration", tursoBaseURL, orgSlug, dbName)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var database = DatabaseConfiguration{}
 	json.NewDecoder(resp.Body).Decode(&database)
 	defer resp.Body.Close()
 	return &database, nil
@@ -749,4 +806,28 @@ func (org *Organizations) CurrentSubscription(orgSlug string) (*Subscription, er
 	json.NewDecoder(resp.Body).Decode(&subscription)
 	defer resp.Body.Close()
 	return &subscription, nil
+}
+
+func (org *Organizations) ListInvoices(orgSlug string) (*Invoices, error) {
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/invoices", tursoBaseURL, orgSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var invoices = Invoices{}
+	json.NewDecoder(resp.Body).Decode(&invoices)
+	defer resp.Body.Close()
+	return &invoices, nil
+}
+
+func (org *Organizations) OrganisationUsage(orgSlug string) (*OrganizationUsage, error) {
+	endpoint := fmt.Sprintf("%s/v1/organizations/%s/usage", tursoBaseURL, orgSlug)
+	resp, err := org.client.tursoAPIrequest(endpoint, http.MethodGet, nil)
+	if err != nil {
+		return nil, err
+	}
+	var usage = OrganizationUsage{}
+	json.NewDecoder(resp.Body).Decode(&usage)
+	defer resp.Body.Close()
+	return &usage, nil
 }
